@@ -1,0 +1,26 @@
+Revision history for Perl extension File::NCopy.
+
+0.30 Fri Apr 17 23:13:47 1998
+    - Added the follow_links attribute so that links are now followed if
+      the attribute is set.  I also fixed the way symlinks are set, the
+      previous behaviour wasn't the most desirable.
+
+0.20 Tue Apr 15 23:30:24 1998
+    - Quite a few new features.  You can now use it as an object
+      oriented module with a few new attributes.  Also it the first
+      argument is a scalar reference and it's used as a straight forward
+      module the scalar will be the value of the recursive flag.  If
+      copying a directory with the recursive flag non-zero then the
+      directory is recursively copied over.  There are several other new
+      features.
+
+0.12 Tue Apr 14 15:49:40 1998
+    - Set the file permissons and directory permissions to the same as
+      we are copying from.
+
+0.11 Mon Apr 13 16:37:30 1998
+    - Changed the return values to successes rather than failures since
+      it makes more sense.
+
+0.10  Fri Apr 10 22:29:41 1998
+    - original version
