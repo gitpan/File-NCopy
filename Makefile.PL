@@ -4,4 +4,5 @@ use ExtUtils::MakeMaker;
 WriteMakefile(
     'NAME'	=> 'File::NCopy',
     'VERSION_FROM' => './lib/File/NCopy.pm',
+    'PREREQ_PM' => { 'File::Spec' => 0 },
 );

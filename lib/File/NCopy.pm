@@ -170,16 +170,19 @@ modify it under the same terms as Perl itself.
 Some ideas gleaned from File::Copy by Aaron Sherman & Charles Bailey,
 but the code was written from scratch.
 
+Patch at version 0.33 added by MZSANFORD.
+
 =cut
 
 use Cwd ();
+use File::Spec;
 use strict;
 use vars qw(@EXPORT_OK @ISA $VERSION);
 @ISA = qw(Exporter);
 # we export nothing by default :)
 @EXPORT_OK = qw(copy cp);
 
-$VERSION = '0.32';
+$VERSION = '0.33';
 
 # this works on Unix
 sub u_chmod($$)
@@ -282,7 +285,7 @@ sub _docopy_file_file($$$)
 NO_FILE:
     # files aren't the same; now open for writing unless we got a
     # filehandle
-    if(! $was_handle) {
+    if(! $was_handle && ! $this->{test}) {
         open FILE_TO,">$file_to"
             or chmod 0644, "$file_to"
                 if $this->{'force_write'};
@@ -295,15 +298,15 @@ NO_FILE:
     }
 
     # and now for the braindead OS's
-    binmode FILE_FROM;
-    binmode FILE_TO;
+    binmode FILE_FROM unless ($this->{test});
+    binmode FILE_TO   unless ($this->{test});
 
     my $buf = '';
     my ($len,$write_n);
     # read file and write to new file, recover from write errors and
     # read errors; we accept however much we read and try to write it
     # 8K is a nice buffer size for most file systems
-    while(1) {
+    while(! $this->{test} && 1) {
         $len = sysread(FILE_FROM,$buf,8192);
         return 0
             unless defined $len;
@@ -322,10 +325,12 @@ NO_FILE:
         if $this->{'preserve'};
 
     # we only close files we opened
+    unless ($this->{test}) {
     close FILE_FROM
         unless ref $file_from eq 'GLOB' || ref $file_from eq 'FileHandle';
     close FILE_TO
         unless ref $file_to eq 'GLOB' || ref $file_to eq 'FileHandle';
+    }
 
     print "$file_from ==> $file_to\n"
         if $this->{'_debug'};
@@ -354,6 +359,10 @@ sub _recurse_from_dir($$$)
     my $this = shift;
     my ($from_dir,$to_dir) = @_;
     local (*DIR);
+    # MZS - v0.39 - Changed from slash to File::Spec;
+    my $dir_sep = File::Spec->catfile('a','b');
+    $dir_sep =~ s/^a(.+)b$/$1/;
+
 
     opendir DIR,$from_dir
         or do {
@@ -370,7 +379,7 @@ sub _recurse_from_dir($$$)
     closedir DIR;
 
     my $made_dir;
-    unless(-e $to_dir) {
+    unless(-e $to_dir && ! $this->{test}) {
         mkdir $to_dir,0777
             or return 0;
         $made_dir = 1;
@@ -391,22 +400,22 @@ sub _recurse_from_dir($$$)
         next
             if /^\.\.?$/;
         if(-f "$from_dir/$_") {
-            $ret = _docopy_file_file $this, $from_dir . '/' . $_ ,
-                    $to_dir . '/' . $_;
+            $ret = _docopy_file_file $this, $from_dir . $dir_sep . $_ ,
+                    $to_dir . $dir_sep . $_;
         }
-        elsif(-d "$from_dir/$_") {
-            if($this->{'follow_links'} && -l "$from_dir/$_") {
-                $link = get_path "$from_dir/$_";
+        elsif(-d "$from_dir$dir_sep$_") {
+            if($this->{'follow_links'} && -l "$from_dir$dir_sep$_") {
+                $link = get_path "$from_dir$dir_sep$_";
             }
-            if(! -l "$from_dir/$_" || $this->{'follow_links'}
+            if(! -l "$from_dir$dir_sep$_" || $this->{'follow_links'}
                     && defined $link
                     && ! exists $this->{'_links'}->{$link}) {
                 $ret = _recurse_from_dir
-                        $this,$from_dir . '/' . $_ ,$to_dir . '/' . $_;
+                        $this,$from_dir . $dir_sep . $_ ,$to_dir . $dir_sep . $_;
             }
             else {
-                if(defined($link = get_path "$from_dir/$_")) {
-                    $ret = symlink $link, "$to_dir/$_";
+                if(defined($link = get_path "$from_dir$dir_sep$_")) {
+                    $ret = symlink $link, "$to_dir$dir_sep$_";
                 }
             }
         }
@@ -433,10 +442,13 @@ sub _docopy_dir_dir($$$)
     my $this = shift;
     my ($dir_from,$dir_to) = @_;
     my ($from_name);
+    # MZS - v0.39 - Changed from slash to File::Spec;
+    my $dir_sep = File::Spec->catfile('a','b');
+    $dir_sep =~ s/^a(.+)b$/$1/;
 
-    $dir_from =~ s/\/$//; # remove trailing slash, if any
-    if($dir_from =~ tr/\///) {
-        $from_name = substr $dir_from,rindex($dir_from,'/') + 1;
+    $dir_from =~ s/$dir_sep$//; # remove trailing slash, if any
+    if($dir_from =~ tr/$dir_sep//) {
+        $from_name = substr $dir_from,rindex($dir_from,$dir_sep) + 1;
     }
     else {
         $from_name = $dir_from;
@@ -445,8 +457,8 @@ sub _docopy_dir_dir($$$)
         }
     }
 
-    unless($dir_to =~ /\/$/) {
-        $dir_to .= '/';
+    unless($dir_to =~ /$dir_sep$/) {
+        $dir_to .= $dir_sep;
     }
     $dir_to .= $from_name;
 
@@ -460,15 +472,18 @@ sub _docopy_file_dir($$$)
     my $this = shift;
     my ($file,$dir) = @_;
     my $file_to;
+    # MZS - v0.39 - Changed from slash to File::Spec;
+    my $dir_sep = File::Spec->catfile('a','b');
+    $dir_sep =~ s/^a(.+)b$/$1/;
 
-    if($file =~ tr/\///) {
-        $file_to = substr $file,rindex($file,'/') + 1;
+    if($file =~ tr/$dir_sep//) {
+        $file_to = substr $file,rindex($file,$dir_sep) + 1;
     }
     else {
         $file_to = $file;
     }
-
-    $dir =~ s/\/$//; # remove trailing slash
+    
+    $dir =~ s/$dir_sep$//; # remove trailing slash 
 
     _docopy_file_file $this, $file,$dir.'/'.$file_to;
 }
@@ -482,12 +497,20 @@ sub _docopy_files_dir($$@)
 
     for (@_) {
         if(-d $_ && $this->{'recursive'}) {
+            if ($this->{test}) {
+                push @$copies, $_;
+            } else {
             _docopy_dir_dir $this, $_, $dir
                 and push @$copies, $_;
+            }
         }
         elsif(-f $_) {
+            if ($this->{test}) {
+                push @$copies, $_;
+            } else {
             _docopy_file_dir $this, $_, $dir
                 and push @$copies, $_;
+            }
         }
     }
     1;
@@ -537,12 +560,17 @@ sub copy(@)
 
     # one or more files/directories to a directory
     if(@args >= 2 && -d $args[$#args]) {
+        print "Copy to dir started.\n" if ($this->{'_debug'});
         _docopy_files_dir $this, \@copies, @args;
     }
     # file to file
     elsif(@args == 2 && -f $args[0]) {
+        if ($this->{test}) {
+                push @copies, $args[0];
+        } else {
         _docopy_file_file $this, $args[0],$args[1]
             and push @copies, $args[0];
+        }
     }
 
     @copies;
@@ -558,6 +586,7 @@ sub new(@)
     my $this = shift;
     
     my $conf = {
+        'test'           => 0,
         'recursive'      => 0,
         'preserve'       => 0,
         'follow_links'   => 0,
@@ -579,6 +608,8 @@ sub new(@)
     }
 
     if(ref $ref eq 'HASH') {
+        $conf->{'test'} = abs int $ref->{'test'}
+            if defined $ref->{'test'};
         $conf->{'recursive'} = abs int $ref->{'recursive'}
             if defined $ref->{'recursive'};
         $conf->{'preserve'} = abs int $ref->{'preserve'}

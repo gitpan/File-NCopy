@@ -2,3 +2,4 @@ Changes
 lib/File/NCopy.pm
 MANIFEST
 Makefile.PL
+test.pl

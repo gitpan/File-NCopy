@@ -1,5 +1,11 @@
 Revision history for Perl extension File::NCopy.
 
+0.33 Mon May 20 00:00:00 2002
+    - MZSANFORD Added version that uses File::Spec to make portable.
+    - MZSANFORD Added some basic tests
+    - MZSANFORD Added additional debug statements
+    - MZSANFORD tested code on Win32
+
 0.32 Thu Jun 25 17:45:04 1998
     - Added force-write option.  Fixed a bug which kept the module
       working when not used in OO mode.  Fixed lack of directory
