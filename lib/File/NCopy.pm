@@ -167,7 +167,7 @@ but the code was written from scratch.
 
 =cut
 
-use POSIX ();
+use Cwd ();
 use strict;
 use vars qw(@EXPORT_OK @ISA $VERSION $debug);
 # $debug will disappear in future versions, don't rely on it
@@ -175,7 +175,7 @@ use vars qw(@EXPORT_OK @ISA $VERSION $debug);
 # we export nothing by default :)
 @EXPORT_OK = qw(copy cp);
 
-$VERSION = '0.30';
+$VERSION = '0.31';
 
 # this works on Unix
 sub u_chmod($$)
@@ -198,7 +198,13 @@ sub f_check($$)
         or return 0;
     # try and get an exclusive lock on the file to copy to
     flock $file_to,6
-        or return 0;
+        or do {
+            flock $file_from,8;
+            return 0;
+        };
+    flock $file_from,8;
+    flock $file_to,8;
+
     1;
 }
 
@@ -311,10 +317,10 @@ sub get_path($)
 {
     my $dir = shift;
 
-    my $save_dir = POSIX::getcwd;
+    my $save_dir = Cwd::cwd;
     chdir $dir
         or return undef;
-    $dir = POSIX::getcwd;
+    $dir = Cwd::cwd;
     chdir $save_dir;
 
     $dir;

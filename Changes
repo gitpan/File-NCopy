@@ -1,6 +1,10 @@
 Revision history for Perl extension File::NCopy.
 
-0.30 Fri Apr 17 23:13:47 1998
+0.31 Fri May 15 17:08:23 1998
+    - Changed the POSIX module to Cwd since it's more portable to
+      non-Unix systems.
+
+0.30 Fri Apr 18 23:13:47 1998
     - Added the follow_links attribute so that links are now followed if
       the attribute is set.  I also fixed the way symlinks are set, the
       previous behaviour wasn't the most desirable.
