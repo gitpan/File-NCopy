@@ -37,6 +37,7 @@ B<File::NCopy> - Copy file, file
             'recursive'      => 0,
             'preserve'       => 0,
             'follow_links'   => 0,
+            'force_write'   => 0,
             'set_permission' => \&File::NCopy::u_chmod,
             'file_check'     => \&File::NCopy::f_check,
             'set_times'      => \&File::NCopy::s_times,
@@ -140,6 +141,10 @@ link to /usr/src/i386/sys/ rather than /usr/src/sys/ since if the link
 /usr/src/sys/ is removed then we lost the link even though the directory
 we originally intended to link to still exists.
 
+=item B<force_write>
+
+Force the writing of a file even if the permissions are read only on it.
+
 =back
 
 =head1 EXAMPLE
@@ -169,13 +174,12 @@ but the code was written from scratch.
 
 use Cwd ();
 use strict;
-use vars qw(@EXPORT_OK @ISA $VERSION $debug);
-# $debug will disappear in future versions, don't rely on it
+use vars qw(@EXPORT_OK @ISA $VERSION);
 @ISA = qw(Exporter);
 # we export nothing by default :)
 @EXPORT_OK = qw(copy cp);
 
-$VERSION = '0.31';
+$VERSION = '0.32';
 
 # this works on Unix
 sub u_chmod($$)
@@ -232,7 +236,7 @@ sub s_times($$)
     utime $atime,$mtime,$file_to
         unless ref $file_to eq 'GLOB' || ref $file_to eq 'FileHandle';
 
-    # this may only work for men in white hats
+    # this may only work for men in white hats; on Unix
     chown $uid,$gid,$file_to
         unless ref $file_to eq 'GLOB' || ref $file_to eq 'FileHandle';
     1;
@@ -244,11 +248,16 @@ sub _docopy_file_file($$$)
     my $this = shift;
     my ($file_from,$file_to) = @_;
     local (*FILE_FROM,*FILE_TO);
+    my ($was_handle);
 
     # did we get a file handle ?
     unless(ref $file_from eq 'GLOB' || ref $file_from eq 'FileHandle') {
         open FILE_FROM,"<$file_from"
-            or return 0;
+            or do {
+                print "*** Couldn\'t open from file <$!> ==> $file_from\n"
+                    if $this->{'_debug'};
+                return 0;
+            };
     }
     else {
         *FILE_FROM = *$file_from;
@@ -262,6 +271,7 @@ sub _docopy_file_file($$$)
     }
     else {
         *FILE_TO = *$file_to;
+        $was_handle = 1;
     }
 
     unless(-t FILE_FROM || -t FILE_TO) {
@@ -270,9 +280,19 @@ sub _docopy_file_file($$$)
     }
 
 NO_FILE:
-    # files aren't the same; now open for writing
-    open FILE_TO,">$file_to"
-        or return 0;
+    # files aren't the same; now open for writing unless we got a
+    # filehandle
+    if(! $was_handle) {
+        open FILE_TO,">$file_to"
+            or chmod 0644, "$file_to"
+                if $this->{'force_write'};
+        open FILE_TO,">$file_to"
+            or do {
+                print "*** Couldn\'t open to file <$!> ==> $file_to\n"
+                    if $this->{'_debug'};
+                return 0;
+            };
+    }
 
     # and now for the braindead OS's
     binmode FILE_FROM;
@@ -308,7 +328,7 @@ NO_FILE:
         unless ref $file_to eq 'GLOB' || ref $file_to eq 'FileHandle';
 
     print "$file_from ==> $file_to\n"
-        if $debug;
+        if $this->{'_debug'};
 
     1;
 }
@@ -336,9 +356,17 @@ sub _recurse_from_dir($$$)
     local (*DIR);
 
     opendir DIR,$from_dir
-        or return 0;
-    my @files = grep {! /^\.\.?$/} readdir DIR
-        or return 0;
+        or do {
+            print "*** Couldn\'t opendir <$!> ==> $from_dir\n"
+                if $this->{'_debug'};
+            return 0;
+        };
+    my @files = readdir DIR
+        or do {
+            print "*** Couldn\'t read dir <$!> ==> $from_dir\n"
+                if $this->{'_debug'};
+            return 0;
+        };
     closedir DIR;
 
     my $made_dir;
@@ -360,6 +388,8 @@ sub _recurse_from_dir($$$)
     }
 
     for (@files) {
+        next
+            if /^\.\.?$/;
         if(-f "$from_dir/$_") {
             $ret = _docopy_file_file $this, $from_dir . '/' . $_ ,
                     $to_dir . '/' . $_;
@@ -492,7 +522,7 @@ sub copy(@)
     }
     else {
         # no, so let's make one
-        $this = new;
+        $this = new File::NCopy;
         if(ref $_[0] eq 'SCALAR') {
             my $rec = shift;
             $this->recursive($$rec);
@@ -501,6 +531,9 @@ sub copy(@)
 
     my @copies;
     my @args = expand @_;
+
+    print "passed args ==> @args\n"
+        if $this->{'_debug'};
 
     # one or more files/directories to a directory
     if(@args >= 2 && -d $args[$#args]) {
@@ -528,6 +561,8 @@ sub new(@)
         'recursive'      => 0,
         'preserve'       => 0,
         'follow_links'   => 0,
+        'force_write'    => 0,
+        '_debug'         => 0,
         'set_permission' => \&File::NCopy::u_chmod,
         'file_check'     => \&File::NCopy::f_check,
         'set_times'      => \&File::NCopy::s_times,
@@ -550,6 +585,10 @@ sub new(@)
             if defined $ref->{'preserve'};
         $conf->{'follow_links'} = abs int $ref->{'follow_links'}
             if defined $ref->{'follow_links'};
+        $conf->{'force_write'} = abs int $ref->{'force_write'}
+            if defined $ref->{'force_write'};
+        $conf->{'_debug'} = abs int $ref->{'_debug'}
+            if defined $ref->{'_debug'};
         $conf->{'set_permission'} = $ref->{'set_permission'}
             if defined $ref->{'set_permission'}
                 && ref $ref->{'set_permission'} eq 'CODE';
@@ -601,6 +640,19 @@ sub follow_links($;$)
 
     @_ ? $this->{'follow_links'} = abs int shift
        : $this->{'follow_links'};
+}
+
+sub force_write($;$)
+{
+    return
+        if @_ < 1;
+    my $this = shift;
+
+    return
+        unless ref $this eq 'File::NCopy';
+
+    @_ ? $this->{'force_write'} = abs int shift
+       : $this->{'force_write'};
 }
 
 1;
