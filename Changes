@@ -1,5 +1,10 @@
 Revision history for Perl extension File::NCopy.
 
+0.34 Thur Apr 24 15:33:00 2003
+    - MZSANFORD Added more File::Spec usage
+    - MZSANFORD Added a note in BUGS from Ken Healy
+    - MZSANFORD Fixed "preserve" option (thanks again Ken)
+
 0.33 Mon May 20 00:00:00 2002
     - MZSANFORD Added version that uses File::Spec to make portable.
     - MZSANFORD Added some basic tests

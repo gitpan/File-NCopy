@@ -159,6 +159,10 @@ follow circular or dead links.  This is really a feature though the
 result may not quite resemble the source dir, the overall content will
 be the same. :)
 
+From Ken Healy (Version 0.34)
+
+On Win32, The use of backslash for paths is required.
+
 =head1 AUTHOR
 
 Gabor Egressy B<gabor@vmunix.com>
@@ -170,7 +174,7 @@ modify it under the same terms as Perl itself.
 Some ideas gleaned from File::Copy by Aaron Sherman & Charles Bailey,
 but the code was written from scratch.
 
-Patch at version 0.33 added by MZSANFORD.
+Patch at versions 0.33, and 0.34 added by MZSANFORD.
 
 =cut
 
@@ -182,7 +186,7 @@ use vars qw(@EXPORT_OK @ISA $VERSION);
 # we export nothing by default :)
 @EXPORT_OK = qw(copy cp);
 
-$VERSION = '0.33';
+$VERSION = '0.34';
 
 # this works on Unix
 sub u_chmod($$)
@@ -321,8 +325,6 @@ NO_FILE:
     }
 
     $this->{'set_permission'}->($file_from,$file_to);
-    $this->{'set_times'}->($file_from,$file_to)
-        if $this->{'preserve'};
 
     # we only close files we opened
     unless ($this->{test}) {
@@ -331,6 +333,10 @@ NO_FILE:
     close FILE_TO
         unless ref $file_to eq 'GLOB' || ref $file_to eq 'FileHandle';
     }
+
+    # this was moved from above the unless statement per Ken Healy in version 0.34
+    $this->{'set_times'}->($file_from,$file_to)
+        if $this->{'preserve'};
 
     print "$file_from ==> $file_to\n"
         if $this->{'_debug'};
@@ -399,7 +405,7 @@ sub _recurse_from_dir($$$)
     for (@files) {
         next
             if /^\.\.?$/;
-        if(-f "$from_dir/$_") {
+        if(-f $from_dir . $dir_sep . $_) {
             $ret = _docopy_file_file $this, $from_dir . $dir_sep . $_ ,
                     $to_dir . $dir_sep . $_;
         }
@@ -485,7 +491,7 @@ sub _docopy_file_dir($$$)
     
     $dir =~ s/$dir_sep$//; # remove trailing slash 
 
-    _docopy_file_file $this, $file,$dir.'/'.$file_to;
+    _docopy_file_file $this, $file,$dir.$dir_sep.$file_to;
 }
 
 # this just redirects calls, like copy ;)
