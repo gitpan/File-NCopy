@@ -1,8 +1,21 @@
+use 5.004;
 use ExtUtils::MakeMaker;
-# See lib/ExtUtils/MakeMaker.pm for details of how to influence
-# the contents of the Makefile that is written.
+
+print << 'EOT';
+
+*** REQUEST ***
+Please use Test::Reporter to report test results - it's the only way to measure
+popularity of distribution.
+
+EOT
+
 WriteMakefile(
     'NAME'	=> 'File::NCopy',
-    'VERSION_FROM' => './lib/File/NCopy.pm',
+    'VERSION_FROM' => 'lib/File/NCopy.pm',
     'PREREQ_PM' => { 'File::Spec' => 0 },
+    ($ExtUtils::MakeMaker::VERSION ge '6.30_00'? 
+     ('LICENSE'		=> 'perl', ) : ()),
+    ($] >= 5.005 ?    ## Add these new keywords supported since 5.005
+      (ABSTRACT_FROM => './lib/File/NCopy.pm', # retrieve abstract from module
+       AUTHOR     => 'Alexandr Ciornii <alexchorny@'.'gmail.com>') : ()),
 );

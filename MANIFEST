@@ -1,5 +1,8 @@
 Changes
 lib/File/NCopy.pm
-MANIFEST
 Makefile.PL
-test.pl
+MANIFEST			This list of files
+META.yml
+t/test.t
+t/pod.t
+Contributing.txt

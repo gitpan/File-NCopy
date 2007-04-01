@@ -1,10 +1,9 @@
 package File::NCopy;
-require 5.004; # just because I think you should upgrade :)
+use 5.004; # just because I think you should upgrade :)
 
 =head1 NAME
 
-B<File::NCopy> - Copy file, file
-              Copy file[s] | dir[s], dir
+File::NCopy - Almost abandoned module. Copy file, file. Copy file[s] | dir[s], dir
 
 =head1 SYNOPSIS
 
@@ -176,6 +175,8 @@ but the code was written from scratch.
 
 Patch at versions 0.33, and 0.34 added by MZSANFORD.
 
+0.34_01 - Alexandr Ciornii (alexchorny AT gmail.com)
+
 =cut
 
 use Cwd ();
@@ -186,7 +187,7 @@ use vars qw(@EXPORT_OK @ISA $VERSION);
 # we export nothing by default :)
 @EXPORT_OK = qw(copy cp);
 
-$VERSION = '0.34';
+$VERSION = '0.34_01';
 
 # this works on Unix
 sub u_chmod($$)
@@ -561,7 +562,7 @@ sub copy(@)
     my @copies;
     my @args = expand @_;
 
-    print "passed args ==> @args\n"
+    print "passed args ==> ".join(',',map {"'$_'"} @args)."\n"
         if $this->{'_debug'};
 
     # one or more files/directories to a directory

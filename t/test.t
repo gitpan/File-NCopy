@@ -1,14 +1,9 @@
-# Before `make install' is performed this script should be runnable with
-# `make test'. After `make install' it should work as `perl test.pl'
 
-#########################
-
-# change 'tests => 1' to 'tests => last_test_to_print';
-
+use strict;
 use Test;
 use File::Spec;
 BEGIN { plan tests => 4 };
-use File::NCopy;
+use File::NCopy 0.34;
 ok(1); # Loaded
 
 # New object
@@ -18,13 +13,13 @@ ok($test);
 # Need this later
 my $dirsep = File::Spec->catfile('a','b');
 $dirsep =~ s!a(.+)b$!$1!;
-$rdirsep = ($dirsep eq '\\' ? '\\\\' : $dirsep );
+my $rdirsep = ($dirsep eq '\\' ? '\\\\' : $dirsep );
 
 # Test Defaults
 ok($test->{recursive} == 0 && $test->{preserve} == 0 && $test->{follow_links} == 0 && $test->{force_write} == 0);
 
-$tmp_dir = File::Spec->tmpdir();
-$path = File::Spec->catfile($tmp_dir,'test_ncpy_inst');
+my $tmp_dir = File::Spec->tmpdir();
+my $path = File::Spec->catfile($tmp_dir,'test_ncpy_inst');
 mkdir $path unless (-e $path);
 $test->{recursive} = 1;
 my @files = $test->copy($tmp_dir,$path);
@@ -38,8 +33,8 @@ if ((scalar(@files) == 0)) {
 		if (index($path,$dirsep) == 0) {
 			$path = substr($path,(length($path) - length($path) - 1),(length($path) - 1));
 		}
-        my $parts = scalar(split(/$rdirsep/,$path));
-        if ($parts > 0) {
+        my @parts = split(/$rdirsep/,$path);
+        if (@parts > 0) {
             # it should contain a seperator
             $done = 1;
             if (index($path,$dirsep)) {
@@ -48,7 +43,7 @@ if ((scalar(@files) == 0)) {
                 $done = 1;
             } else {
                 # this is bad.
-				warn "Path '$path' ($parts parts) did not contain a seperator\n";
+				warn "Path '$path' (".scalar(@parts)." parts) did not contain a separator\n";
                 ok(0);
                 $done = 1;
             }
@@ -64,7 +59,3 @@ if ((scalar(@files) == 0)) {
         ok(0);
     }
 }
-
-
-
-
