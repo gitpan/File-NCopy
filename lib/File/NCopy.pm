@@ -3,7 +3,7 @@ use 5.004; # just because I think you should upgrade :)
 
 =head1 NAME
 
-File::NCopy - Almost abandoned module. Copy file, file. Copy file[s] | dir[s], dir
+File::NCopy - Deprecated module. Use File::Copy::Recursive instead. Copy file, file. Copy file[s] | dir[s], dir
 
 =head1 SYNOPSIS
 
@@ -164,7 +164,7 @@ On Win32, The use of backslash for paths is required.
 
 =head1 AUTHOR
 
-Gabor Egressy B<gabor@vmunix.com>
+Gabor Egressy B<gabor AT vmunix.com>
 
 Copyright (c) 1998 Gabor Egressy.  All rights reserved.  All wrongs
 reversed.  This program is free software; you can redistribute and/or
@@ -175,7 +175,7 @@ but the code was written from scratch.
 
 Patch at versions 0.33, and 0.34 added by MZSANFORD.
 
-0.34_01 - Alexandr Ciornii (alexchorny AT gmail.com)
+0.35 - Alexandr Ciornii (alexchorny AT gmail.com)
 
 =cut
 
@@ -187,7 +187,7 @@ use vars qw(@EXPORT_OK @ISA $VERSION);
 # we export nothing by default :)
 @EXPORT_OK = qw(copy cp);
 
-$VERSION = '0.34_01';
+$VERSION = '0.35';
 
 # this works on Unix
 sub u_chmod($$)
@@ -539,7 +539,7 @@ sub expand(@)
     @args;
 }
 
-sub new(@);
+sub new(@); #prototype
 
 # this just redirects calls
 sub copy(@)

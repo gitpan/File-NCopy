@@ -1,5 +1,9 @@
 Revision history for Perl extension File::NCopy.
 
+0.35 Apr 14 2007 by Alexandr Ciornii
+    - Marked distribution as deprecated
+    - Added Readme
+
 0.34_01 Apr 01 2007 by Alexandr Ciornii
     - better distribution
     - some small fixes

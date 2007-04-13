@@ -1,7 +1,7 @@
 --- #YAML:1.0
 name:                File-NCopy
-version:             0.34_01
-abstract:            Almost abandoned module. Copy file, file. Copy file[s] | dir[s], dir
+version:             0.35
+abstract:            Deprecated module. Use File::Copy::Recursive instead. Copy file, file. Copy file[s] | dir[s], dir
 license:             perl
 generated_by:        ExtUtils::MakeMaker version 6.31
 distribution_type:   module
