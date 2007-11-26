@@ -16,8 +16,8 @@ EOT
 WriteMakefile(
     'NAME'	=> 'File::NCopy',
     'VERSION_FROM' => 'lib/File/NCopy.pm',
-    'PREREQ_PM' => { 'File::Spec' => 0, },
-    ($ExtUtils::MakeMaker::VERSION ge '6.30_00'? 
+    'PREREQ_PM' => { 'File::Spec' => 0, 'Test::More'=>0},
+    ($ExtUtils::MakeMaker::VERSION gt '6.30'? 
      ('LICENSE'		=> 'perl', ) : ()),
     ($] >= 5.005 ?    ## Add these new keywords supported since 5.005
       (ABSTRACT_FROM => './lib/File/NCopy.pm', # retrieve abstract from module

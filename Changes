@@ -1,5 +1,8 @@
 Revision history for Perl extension File::NCopy.
 
+0.36 Nov 26 2007 by Alexandr Ciornii
+    - perl 5.5 compatibility in tests
+
 0.35 Apr 14 2007 by Alexandr Ciornii
     - Marked distribution as deprecated
     - Added Readme
@@ -12,16 +15,16 @@ Revision history for Perl extension File::NCopy.
     - test moved to t/, use strict
     - pod.t
 
-0.34 Thu Apr 24 15:33:00 2003
-    - MZSANFORD Added more File::Spec usage
-    - MZSANFORD Added a note in BUGS from Ken Healy
-    - MZSANFORD Fixed "preserve" option (thanks again Ken)
+0.34 Thu Apr 24 15:33:00 2003 by MZSANFORD
+    - Added more File::Spec usage
+    - Added a note in BUGS from Ken Healy
+    - Fixed "preserve" option (thanks again Ken)
 
-0.33 Mon May 20 00:00:00 2002
-    - MZSANFORD Added version that uses File::Spec to make portable.
-    - MZSANFORD Added some basic tests
-    - MZSANFORD Added additional debug statements
-    - MZSANFORD tested code on Win32
+0.33 Mon May 20 00:00:00 2002 by MZSANFORD
+    - Added version that uses File::Spec to make portable.
+    - Added some basic tests
+    - Added additional debug statements
+    - tested code on Win32
 
 0.32 Thu Jun 25 17:45:04 1998
     - Added force-write option.  Fixed a bug which kept the module

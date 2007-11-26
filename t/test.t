@@ -3,7 +3,7 @@ use strict;
 use Test;
 use File::Spec;
 BEGIN { plan tests => 4 };
-use File::NCopy 0.34;
+use File::NCopy 0.35;
 ok(1); # Loaded
 
 # New object
@@ -20,7 +20,7 @@ ok($test->{recursive} == 0 && $test->{preserve} == 0 && $test->{follow_links} ==
 
 my $tmp_dir = File::Spec->tmpdir();
 my $path = File::Spec->catfile($tmp_dir,'test_ncpy_inst');
-mkdir $path unless (-e $path);
+mkdir $path,0777 unless (-e $path); #perl 5.5 requires both arguments to mkdir
 $test->{recursive} = 1;
 my @files = $test->copy($tmp_dir,$path);
 if ((scalar(@files) == 0)) {

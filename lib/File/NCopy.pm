@@ -175,7 +175,7 @@ but the code was written from scratch.
 
 Patch at versions 0.33, and 0.34 added by MZSANFORD.
 
-0.35 - Alexandr Ciornii (alexchorny AT gmail.com)
+0.35, 0.36 - Alexandr Ciornii (alexchorny AT gmail.com)
 
 =cut
 
@@ -187,7 +187,7 @@ use vars qw(@EXPORT_OK @ISA $VERSION);
 # we export nothing by default :)
 @EXPORT_OK = qw(copy cp);
 
-$VERSION = '0.35';
+$VERSION = '0.36';
 
 # this works on Unix
 sub u_chmod($$)
@@ -355,7 +355,7 @@ sub get_path($)
     $dir = Cwd::cwd;
     chdir $save_dir;
 
-    $dir;
+    return $dir;
 }
 
 sub _recurse_from_dir($$$);
@@ -441,7 +441,7 @@ sub _recurse_from_dir($$$)
         delete $this->{'_links'}->{$save_link};
     }
 
-    $retval;
+    return $retval;
 }
 
 sub _docopy_dir_dir($$$)
